@@ -1,0 +1,13 @@
+#!/bin/sh -
+#Startup script for nioserver on unix-based machines
+
+HERE=`dirname $0`
+LIBDIR=`cd $HERE; cd ../lib; pwd`
+JARS=`echo $LIBDIR/*.jar | tr ' ' :`
+
+doCmd() {
+    echo "$@"
+    "$@"
+}
+
+doCmd scala -cp $JARS NioServer

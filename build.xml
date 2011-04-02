@@ -1,0 +1,329 @@
+<project name="nioserver" default="build">
+
+    <target name="init">
+        <!-- Create symlink pointing to your scala main directories:
+             scala-current points to 2.8.0-final
+             scala-dev points to dev of 2.8.0 for scaladoc
+         -->
+        <property name="scala.dir" value="scala-current"/>
+        <property name="scala.dev" value="scala-dev"/>
+
+        <!-- The directory that contains all external libraries.
+             You can create this directory locally, or create a symlink
+             to point to another directory, or change this variable
+             to point to another directory.
+         -->
+        <property name="lib.dir" value="xlib"/>
+        <property name="log4j.version" value="1.2.14"/>
+        <property name="scalatest.version" value="1.2"/>
+
+        <property name="src.dir" value="src/main/scala"/>
+        <property name="arch.dir" value="Arch"/>
+        <property name="release.dir" value="release"/>
+        <property name="example.src.dir" value="src/example/scala"/>
+
+        <property name="build.dir" value="build"/>
+        <property name="class.dir" value="${build.dir}/class"/>
+        <property name="apidoc.dir" value="${build.dir}/doc/api"/>
+
+        <property name="test.src.dir" value="src/test/scala"/>
+        <property name="test.class.dir" value="${build.dir}/test/class"/>
+        <property name="test.out.file" value="${build.dir}/test/test.out"/>
+
+        <property file="VERSION"/>
+        <property name="lib.jar"
+            value="${build.dir}/nioserver-${version.number}.jar"/>
+        <property name="rel.subdir" value="${version.name}-${version.number}"/>
+        <property name="rel.subname"
+            value="${version.name}-src-${version.number}"/>
+        <property name="rel.dir" value="${release.dir}/${rel.subdir}" />
+        <property name="rel.zip" value="${release.dir}/${rel.subname}.zip" />
+
+        <property name="relbin.files"
+            value="README.md VERSION LICENSE COPYRIGHT HISTORY"/>
+        <property name="script.files" value="nioserver"/>
+        <property name="relsrc.files"
+                  value="build.xml ${src.dir}/**/*.scala
+                        ${example.src.dir}/**/*.scala" />
+
+        <property name="scala.compiler.jar"
+                value="${scala.dir}/lib/scala-compiler.jar"/>
+        <property name="scala.library.jar"
+                value="${scala.dir}/lib/scala-library.jar"/>
+
+        <property name="scalatest.dir"
+                value="${lib.dir}/scalatest/scalatest-${scalatest.version}"/>
+        <property name="scalatest.jar"
+                value="${scalatest.dir}/scalatest-${scalatest.version}.jar"/>
+
+        <property name="log4j.dir" value="${lib.dir}/log4j"/>
+        <property name="log4j.jar"
+                value="${log4j.dir}/log4j-${log4j.version}.jar"/>
+
+        <!-- The classpath for compiling our scala classes. -->
+        <path id="compile.classpath">
+            <pathelement location="${class.dir}"/>
+        </path>
+
+        <path id="scala.only.classpath">
+            <pathelement location="${scala.compiler.jar}"/>
+            <pathelement location="${scala.library.jar}"/>
+        </path>
+
+        <!-- The classpath for compiling our scala classes. -->
+        <path id="scala.classpath">
+            <path refid="scala.only.classpath"/>
+            <pathelement location="${class.dir}"/>
+            <!-- <pathelement location="${log4j.jar}"/> -->
+        </path>
+
+        <!-- The classpath for compiling our test scala classes. -->
+        <path id="test.scala.classpath">
+            <path refid="scala.classpath"/>
+            <pathelement location="${scalatest.jar}"/>
+        </path>
+
+        <!-- The classpath for running our test scala classes. -->
+        <path id="test.run.classpath">
+            <path refid="test.scala.classpath"/>
+            <pathelement location="${test.class.dir}"/>
+        </path>
+
+        <!-- The classpath for creating our scaladoc docs. -->
+	<path id="scaladoc.classpath">
+            <pathelement location="${scala.library.jar}"/>
+	    <path refid="compile.classpath"/>
+	</path>
+
+        <!-- Define the scalac task -->
+        <taskdef resource="scala/tools/ant/antlib.xml">
+            <classpath refid="scala.classpath"/>
+        </taskdef>
+
+    </target>
+
+    <target name="mkdirs" depends="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${class.dir}"/>
+        <mkdir dir="${test.class.dir}"/>
+        <mkdir dir="${release.dir}"/>
+    </target>
+
+    <target name="build" depends="jar"/>
+
+    <target name="compile" depends="scalac"/>
+
+    <macrodef name="base-scalac">
+        <!-- fsc task is same as scalac, but uses cached "fast scala compiler" -->
+        <!-- To clear out the compiler cache, run "fsc -reset" -->
+        <attribute name="m.cp.name" default="scala.classpath"/>
+        <attribute name="m.src.dir" default="${src.dir}"/>
+        <attribute name="m.class.dir" default="${class.dir}"/>
+        <sequential>
+            <scalac
+                 srcdir="@{m.src.dir}"
+                 destdir="@{m.class.dir}"
+                 addparams="-g:vars -Xplugin:${scala.dir}/misc/scala-devel/plugins/continuations.jar -Xplugin-require:continuations -P:continuations:enable"
+                 classpathref="@{m.cp.name}"
+                 force="changed"
+                 deprecation="on"
+            >
+                <include name="**/*.scala"/>
+                <exclude name="**/*.old/**/*.scala"/>
+            </scalac>
+        </sequential>
+    </macrodef>
+
+    <target name="scalac" depends="init,mkdirs">
+        <base-scalac/>
+    </target>
+
+    <target name="test-scalac" depends="init,build"
+            description="Compile the scala test files">
+        <base-scalac
+            m.cp.name="test.scala.classpath"
+            m.src.dir="${test.src.dir}"
+            m.class.dir="${test.class.dir}" />
+    </target>
+
+    <target name="example-scalac" depends="init">
+        <base-scalac m.src.dir="${example.src.dir}" />
+    </target>
+
+    <target name="scalac-exec" depends="init,mkdirs">
+        <fileset id="scala.src.fileset" dir="${src.dir}">
+            <include name="**/*.scala"/>
+        </fileset>
+        <pathconvert refid="scala.src.fileset" pathsep=" "
+                property="src.files"/>
+        <pathconvert refid="scala.classpath" property="scala.cp"/>
+        <exec executable="${scala.dir}/bin/scalac">
+            <arg value="-P:continuations:enable"/>
+            <arg value="-sourcepath"/>
+            <arg value="${src.dir}"/>
+            <arg value="-cp"/>
+            <arg value="${scala.cp}"/>
+            <arg value="-d"/>
+            <arg value="${class.dir}"/>
+            <arg value="-unchecked"/>
+            <arg line="${src.files}"/>
+        </exec>
+    </target>
+
+    <target name="jar" depends="compile"
+            description="Build the library jar file">
+        <jar
+            jarfile="${lib.jar}"
+            basedir="${class.dir}"
+        >
+            <manifest>
+                <attribute name="Main-class" value="${main.class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="test-run" depends="init"
+            description="Run the unit tests (assumes they are compiled)">
+        <pathconvert refid="test.run.classpath" property="test.run.cp"/>
+        <exec executable="${scala.dir}/bin/scala" failonerror="true">
+            <arg value="-cp"/>
+            <arg value="${test.run.cp}"/>
+            <arg value="-P:continuations:enable"/>
+            <!-- now the Runner class and its arguments -->
+            <arg value="org.scalatest.tools.Runner"/>
+            <arg value="-p"/>
+            <arg value="${test.class.dir}"/>
+            <arg value="-o"/>
+            <!-- use either "-o" to output to stdout or "-f file" ...
+            <arg value="-f"/>
+            <arg value="${test.out.file}"/>
+            -->
+        </exec>
+    </target>
+
+    <target name="test" depends="test-scalac,test-run"
+            description="Compile and run the unit tests"/>
+
+    <target name="clean" depends="init"
+            description="Remove all generated files">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <!-- Make the documentation -->
+    <target name="doc" depends="apidoc"
+    		description="Compile all the documentation"/>
+
+    <target name="apidoc" depends="init"
+    		description="Create the scaladoc documentation">
+        <uptodate targetfile="${apidoc.dir}/index.html"
+		property="apidoc-uptodate">
+	    <srcfiles dir="${src.dir}"
+	    	includes="**/*.scala"
+		excludes="**/*.old/**/*.scala"/>
+	</uptodate>
+	<antcall target="create-apidoc"/>
+    </target>
+
+    <target name="create-apidoc" depends="init" unless="apidoc-uptodate">
+        <mkdir dir="${apidoc.dir}"/>
+        <fileset id="scala.src.fileset" dir="${src.dir}">
+            <include name="**/*.scala"/>
+        </fileset>
+        <pathconvert refid="scala.src.fileset" pathsep=" "
+                property="src.files"/>
+        <exec executable="${scala.dev}/bin/scaladoc">
+            <arg value="-P:continuations:enable"/>
+            <arg value="-d"/>
+            <arg value="${apidoc.dir}"/>
+            <arg value="-doc-title"/>
+            <arg value="net.jimmc.nio scaladoc"/>
+            <arg line="${src.files}"/>
+        </exec>
+    </target>
+
+    <target name="x-create-apidoc" depends="init" unless="apidoc-uptodate">
+        <mkdir dir="${apidoc.dir}"/>
+	<scaladoc
+		srcdir="${src.dir}"
+		destdir="${apidoc.dir}"
+		classpathref="scaladoc.classpath"
+	>
+            <include name="**/*.scala"/>
+            <exclude name="**/*.old/**/*.scala"/>
+	</scaladoc>
+    </target>
+
+    <target name="all" depends="jar,doc"
+    		description="Build all files for release"/>
+
+    <target name="arch" depends="init"
+    		description="Copy the relzip and README files to the Arch dir">
+	<property name="arch.version.dir"
+		value="${arch.dir}/v${version.number}"/>
+        <mkdir dir="${arch.version.dir}"/>
+        <copy file="${rel.zip}"
+		tofile="${arch.version.dir}/${rel.zip}"
+		preservelastmodified="true"/>
+        <copy file="README"
+		tofile="${arch.version.dir}/README-${version.number}"
+		preservelastmodified="true"/>
+        <chmod dir="${arch.version.dir}" includes="*" perm="-w"/>
+    </target>
+
+    <target name="gittag" depends="init"
+    		description="Tag all files in git for the current release">
+	<echo message="Tagging files as ${version.name}-${version.number}"/>
+        <exec executable="git" failonerror="true" >
+            <arg line="tag -a -m 'Auto-tag version ${version.number}' ${version.name}-${version.number}"/>
+        </exec>
+    </target>
+
+    <target name="rel" depends="relbin,reldoc,relsrc"
+    		description="Create the release directory"/>
+
+    <target name="relbin" depends="init">
+        <mkdir dir="${rel.dir}"/>
+	<copy todir="${rel.dir}" flatten="true" preservelastmodified="true">
+	    <fileset dir="." includes="${relbin.files}"/>
+	</copy>
+
+        <mkdir dir="${rel.dir}/bin"/>
+	<copy todir="${rel.dir}/bin" flatten="true" preservelastmodified="true">
+	    <fileset dir="bin" includes="${script.files}"/>
+	</copy>
+        <chmod dir="${rel.dir}/bin" includes="${script.files}" perm="+x"/>
+
+        <mkdir dir="${rel.dir}/lib"/>
+	<copy todir="${rel.dir}/lib" file="${lib.jar}"
+		preservelastmodified="true"/>
+	<!-- <copy todir="${rel.dir}/lib" file="${log4j.jar}"
+		preservelastmodified="true"/> -->
+    </target>
+
+    <target name="reldoc" depends="init">
+	<copy todir="${rel.dir}/doc/api" preservelastmodified="true">
+	    <fileset dir="${apidoc.dir}" includes="**/*"/>
+	</copy>
+    </target>
+
+    <target name="relsrc" depends="init">
+        <copy todir="${rel.dir}" preservelastmodified="true">
+            <fileset dir="." includes="${relsrc.files}"/>
+        </copy>
+    </target>
+
+    <target name="relapidoczip" depends="init">
+        <zip basedir="." destfile="${rel.dir}/apidoc.zip"
+		includes="${apidoc.dir}/**/*"
+	/>
+    </target>
+
+    <!-- Make the release zip file from the release directory -->
+    <target name="relzip" depends="init"
+	    description=
+	        "Create the distributable jar file from the release directory">
+        <zip basedir="${release.dir}" zipfile="${rel.zip}"
+                includes="${rel.subdir}/**" />
+    </target>
+
+</project>
