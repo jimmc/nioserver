@@ -5,8 +5,19 @@ Java NIO and delimited continuations.
 
 ## Blog
 
-This is the code used in my "Java NIO" blog post at
-http://jim-mcbeath.blogspot.com/2011/03/java-nio-and-scala-continuations.html
+This project holds the code used in my "Java NIO" series of blog posts.
+<table border=1>
+<tr><th>Tag</th><th>Blog Post</th></tr>
+
+<tr><td>blog-continuations b52e65cb5810c7424e37529df9ff3cf91f6abd05</td>
+<td><a href="http://jim-mcbeath.blogspot.com/2011/03/java-nio-and-scala-continuations.html">
+Java NIO and Scala Continuations</a></td></tr>
+
+<tr><td>blog-decoding </td>
+<td><a href="http://jim-mcbeath.blogspot.com/2011/03/java-nio-for-character-decoding-in.html">
+Java NIO for Character Decoding in Scala</a></td></tr>
+
+</table>
 
 ## Compiling and Running with Ant
 

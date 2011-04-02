@@ -13,6 +13,7 @@ object NioConnection {
 class NioConnection(selector:NioSelector, socket:SocketChannel) {
 
     private val buffer = ByteBuffer.allocateDirect(2000)
+    private val lineDecoder = new LineDecoder
 
     def start():Unit = {
         reset {
@@ -43,8 +44,10 @@ class NioConnection(selector:NioSelector, socket:SocketChannel) {
 
     private def readAction(b:ByteBuffer) {
         b.flip()
-        socket.write(b)
-        b.clear()
+        lineDecoder.processBytes(b, writeLine)
+    }
+
+    def writeLine(line:String) {
+        socket.write(ByteBuffer.wrap((line+"\n").getBytes("UTF-8")))
     }
 }
-
