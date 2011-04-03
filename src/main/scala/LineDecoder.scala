@@ -1,6 +1,7 @@
 import java.nio.{ByteBuffer,CharBuffer}
 import java.nio.charset.{Charset,CharsetDecoder,CharsetEncoder,CoderResult}
 import scala.annotation.tailrec
+import scala.util.continuations._
 
 class LineDecoder {
 
@@ -10,11 +11,13 @@ class LineDecoder {
     val utf8Encoder = utf8Charset.newEncoder
     val utf8Decoder = utf8Charset.newDecoder
 
-    def processBytes(b:ByteBuffer, lineHandler:(String)=>Unit):Unit =
+    def processBytes(b:ByteBuffer,
+            lineHandler:(String)=>Unit @suspendable):Unit @suspendable =
         processChars(utf8Decoder.decode(b),lineHandler)
 
     @tailrec
-    private def processChars(cb:CharBuffer, lineHandler:(String)=>Unit) {
+    private def processChars(cb:CharBuffer,
+            lineHandler:(String)=>Unit @suspendable):Unit @suspendable = {
         val len = lengthOfFirstLine(cb)
         if (len>=0) {
             val ca = new Array[Char](len)

@@ -1,3 +1,5 @@
+import net.jimmc.scoroutine.DefaultCoScheduler
+
 import java.net.InetAddress
 
 object NioServer {
@@ -11,10 +13,14 @@ object NioServer {
 
 class NioServer(hostAddr:InetAddress, port:Int) {
     val selector = new NioSelector()
-    val listener = new NioListener(selector, hostAddr, port)
+    val sched = new DefaultCoScheduler
+    val listener = new NioListener(sched, selector, hostAddr, port)
 
     def start() {
         listener.start(true)
-        selector.run()
+        //run the NIO selector on its own thread
+        (new Thread(selector,"NioSelector")).start
+        Thread.currentThread.setName("CoScheduler")
+        sched.run    //run the coroutine scheduler on our thread, renamed
     }
 }

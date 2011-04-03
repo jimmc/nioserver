@@ -9,13 +9,20 @@ This project holds the code used in my "Java NIO" series of blog posts.
 <table border=1>
 <tr><th>Tag</th><th>Blog Post</th></tr>
 
-<tr><td>blog-continuations b52e65cb5810c7424e37529df9ff3cf91f6abd05</td>
+<tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-continuations">
+blog-continuations</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/03/java-nio-and-scala-continuations.html">
 Java NIO and Scala Continuations</a></td></tr>
 
-<tr><td>blog-decoding </td>
+<tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-decoding">
+blog-decoding</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/03/java-nio-for-character-decoding-in.html">
 Java NIO for Character Decoding in Scala</a></td></tr>
+
+<tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-coroutines">
+blog-coroutines</a></td>
+<td><a href="http://jim-mcbeath.blogspot.com/2011/04/java-nio-and-scala-coroutines.html">
+Java NIO and Scala Coroutines</a></td></tr>
 
 </table>
 

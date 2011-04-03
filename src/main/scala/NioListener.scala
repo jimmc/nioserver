@@ -1,9 +1,11 @@
+import net.jimmc.scoroutine.CoScheduler
+
 import java.net.{InetAddress,InetSocketAddress}
 import java.nio.channels.{ServerSocketChannel,SocketChannel}
 import java.nio.channels.SelectionKey
 import scala.util.continuations._
 
-class NioListener(selector:NioSelector, hostAddr:InetAddress, port:Int) {
+class NioListener(sched:CoScheduler, selector:NioSelector, hostAddr:InetAddress, port:Int) {
 
     val serverChannel = ServerSocketChannel.open()
     serverChannel.configureBlocking(false);
@@ -14,7 +16,7 @@ class NioListener(selector:NioSelector, hostAddr:InetAddress, port:Int) {
         reset {
             while (continueListening) {
                 val socket = accept()
-                NioConnection.newConnection(selector,socket)
+                NioConnection.newConnection(sched,selector,socket)
             }
         }
     }
