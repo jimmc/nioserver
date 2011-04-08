@@ -6,20 +6,25 @@ import java.nio.channels.SocketChannel
 import scala.util.continuations._
 
 object NioConnection {
-    def newConnection(sched:CoScheduler, selector:NioSelector, socket:SocketChannel) {
-        val conn = new NioConnection(sched,selector,socket)
+    def newConnection(sched:CoScheduler, readSelector:NioSelector,
+            writeSelector:NioSelector, socket:SocketChannel) {
+        val conn = new NioConnection(sched,readSelector,
+            writeSelector,socket)
         conn.start()
     }
 }
 
-class NioConnection(sched:CoScheduler, selector:NioSelector, socket:SocketChannel) {
+class NioConnection(sched:CoScheduler, readSelector:NioSelector,
+        writeSelector:NioSelector, socket:SocketChannel) {
 
     private val buffer = ByteBuffer.allocateDirect(2000)
     private val lineDecoder = new LineDecoder
     private val inQ = new CoQueue[String](sched, 10)
+    private val outQ = new CoQueue[String](sched, 10)
 
     def start():Unit = {
         startReader
+        startWriter
         startApp
     }
 
@@ -37,7 +42,7 @@ class NioConnection(sched:CoScheduler, selector:NioSelector, socket:SocketChanne
         }
     }
 
-    private def readWait = {
+    private def readWait:Unit @suspendable = {
         buffer.clear()
         val count = read(buffer)
         if (count<1) {
@@ -53,7 +58,7 @@ class NioConnection(sched:CoScheduler, selector:NioSelector, socket:SocketChanne
         if (!socket.isOpen)
             -1  //indicate EOF
         else shift { k =>
-            selector.register(socket, SelectionKey.OP_READ, {
+            readSelector.register(socket, SelectionKey.OP_READ, {
                 val n = socket.read(b)
                 k(n)
             })
@@ -62,7 +67,45 @@ class NioConnection(sched:CoScheduler, selector:NioSelector, socket:SocketChanne
 
     def readLine():String @suspendable = inQ.blockingDequeue
 
-    def writeLine(line:String) {
-        socket.write(ByteBuffer.wrap((line+"\n").getBytes("UTF-8")))
+    private def startWriter() {
+        reset {
+            while (socket.isOpen)
+                writeWait
+        }
     }
+
+    private def write(b:ByteBuffer):Int @suspendable = {
+        if (!socket.isOpen)
+            -1  //indicate EOF
+        else shift { k =>
+            writeSelector.register(socket, SelectionKey.OP_WRITE, {
+                val n = socket.write(b)
+                k(n)
+            })
+        }
+    }
+
+    private def writeBuffer(b:ByteBuffer):Unit @suspendable = {
+        write(b)
+        if (b.remaining>0 && socket.isOpen)
+            writeBuffer(b)
+        else
+            shiftUnit[Unit,Unit,Unit]()
+    }
+
+    private def writeWait:Unit @suspendable = {
+        val str = outQ.blockingDequeue
+        if (str eq closeMarker) {
+            socket.close
+            shiftUnit[Unit,Unit,Unit]()
+        } else
+            writeBuffer(ByteBuffer.wrap(str.getBytes("UTF-8")))
+    }
+
+    def writeLine(s:String):Unit @suspendable = write(s+"\n")
+    def write(s:String):Unit @suspendable = outQ.blockingEnqueue(s)
+
+    def isOpen = socket.isOpen
+    private val closeMarker = new String("")
+    def close():Unit @suspendable = write(closeMarker)
 }

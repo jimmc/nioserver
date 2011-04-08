@@ -5,7 +5,8 @@ import java.nio.channels.{ServerSocketChannel,SocketChannel}
 import java.nio.channels.SelectionKey
 import scala.util.continuations._
 
-class NioListener(sched:CoScheduler, selector:NioSelector, hostAddr:InetAddress, port:Int) {
+class NioListener(sched:CoScheduler, readSelector:NioSelector,
+        writeSelector:NioSelector, hostAddr:InetAddress, port:Int) {
 
     val serverChannel = ServerSocketChannel.open()
     serverChannel.configureBlocking(false);
@@ -16,14 +17,15 @@ class NioListener(sched:CoScheduler, selector:NioSelector, hostAddr:InetAddress,
         reset {
             while (continueListening) {
                 val socket = accept()
-                NioConnection.newConnection(sched,selector,socket)
+                NioConnection.newConnection(sched,
+                    readSelector,writeSelector,socket)
             }
         }
     }
 
     private def accept():SocketChannel @suspendable = {
         shift { k =>
-            selector.register(serverChannel,SelectionKey.OP_ACCEPT, {
+            readSelector.register(serverChannel,SelectionKey.OP_ACCEPT, {
                 val conn = serverChannel.accept()
                 conn.configureBlocking(false)
                 k(conn)

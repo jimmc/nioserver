@@ -24,6 +24,11 @@ blog-coroutines</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/04/java-nio-and-scala-coroutines.html">
 Java NIO and Scala Coroutines</a></td></tr>
 
+<tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-write">
+blog-write</a></td>
+<td><a href="http://jim-mcbeath.blogspot.com/2011/04/java-nio-for-writing.html">
+Java NIO for Writing</a></td></tr>
+
 </table>
 
 ## Compiling and Running with Ant
@@ -56,7 +61,7 @@ echoed back to you.
 To compile without using ant, <code>cd</code> into <code>src/main/scala</code>
 and run this command:
 
-    scalac -P:continuations:enable *.scala
+    scalac -P:continuations:enable *.scala net/jimmc/*/*.scala
 
 You can run the test server from the same directory with this command:
 
@@ -79,4 +84,4 @@ puts its results.  If you want to delete that folder you must do so manually.
 
 From the <code>src/main/scala</code> directory, use this command:
 
-    rm *.class
+    rm *.class net/jimmc/*/*.class
