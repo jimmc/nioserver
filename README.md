@@ -29,6 +29,11 @@ blog-write</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/04/java-nio-for-writing.html">
 Java NIO for Writing</a></td></tr>
 
+<tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-complete">
+blog-complete</a></td>
+<td><a href="http://jim-mcbeath.blogspot.com/2011/04/java-nio-complete-scala-server.html">
+Java NIO Complete Scala Server</a></td></tr>
+
 </table>
 
 ## Compiling and Running with Ant
@@ -42,10 +47,15 @@ for it that includes a startup script:
 
     ant build relbin
 
-You can run the test program with this command (with the appropriate
-value for the version number <code>N.N.N</code>):
+The following command (with the appropriate
+value for the version number <code>N.N.N</code>)
+will run EchoServer:
 
     release/nioserver-N.N.N/bin/nioserver
+
+This command will run ThreeQuestionsServer:
+
+    release/nioserver-N.N.N/bin/3Qserver
 
 If you get an error about port in use, try changing the port value in
 <code>src/main/scala/NioServer.scala</code> and recompiling.
@@ -65,7 +75,11 @@ and run this command:
 
 You can run the test server from the same directory with this command:
 
-    scala NioServer
+    scala EchoServer
+
+Or you can run the ThreeQuestionsServer with this command:
+
+    scala ThreeQuestionsServer
 
 From this point on, see the instructions in the previous section starting
 with what to do about a port-in-use error.

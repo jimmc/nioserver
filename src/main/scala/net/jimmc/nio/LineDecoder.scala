@@ -1,3 +1,5 @@
+package net.jimmc.nio
+
 import java.nio.{ByteBuffer,CharBuffer}
 import java.nio.charset.{Charset,CharsetDecoder,CharsetEncoder,CoderResult}
 import scala.annotation.tailrec

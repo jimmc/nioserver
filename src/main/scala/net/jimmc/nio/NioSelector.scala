@@ -1,3 +1,5 @@
+package net.jimmc.nio
+
 import scala.collection.JavaConversions
 import scala.collection.mutable.SynchronizedQueue
 import java.nio.channels.SelectableChannel

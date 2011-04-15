@@ -1,3 +1,5 @@
+package net.jimmc.nio
+
 import net.jimmc.scoroutine.{CoQueue,CoScheduler}
 
 import java.nio.ByteBuffer
@@ -6,21 +8,18 @@ import java.nio.channels.SocketChannel
 import scala.util.continuations._
 
 object NioConnection {
-    def newConnection(sched:CoScheduler, readSelector:NioSelector,
-            writeSelector:NioSelector, socket:SocketChannel) {
-        val conn = new NioConnection(sched,readSelector,
-            writeSelector,socket)
+    def newConnection(app:NioApplication, socket:SocketChannel) {
+        val conn = new NioConnection(app, socket)
         conn.start()
     }
 }
 
-class NioConnection(sched:CoScheduler, readSelector:NioSelector,
-        writeSelector:NioSelector, socket:SocketChannel) {
+class NioConnection(app:NioApplication, socket:SocketChannel) {
 
     private val buffer = ByteBuffer.allocateDirect(2000)
     private val lineDecoder = new LineDecoder
-    private val inQ = new CoQueue[String](sched, 10)
-    private val outQ = new CoQueue[String](sched, 10)
+    private val inQ = new CoQueue[String](app.sched, 10)
+    private val outQ = new CoQueue[String](app.sched, 10)
 
     def start():Unit = {
         startReader
@@ -30,8 +29,8 @@ class NioConnection(sched:CoScheduler, readSelector:NioSelector,
 
     private def startApp() {
         reset {
-            while (socket.isOpen)
-                writeLine(readLine())
+            app.runConnection(this)
+            close()
         }
     }
 
@@ -58,7 +57,7 @@ class NioConnection(sched:CoScheduler, readSelector:NioSelector,
         if (!socket.isOpen)
             -1  //indicate EOF
         else shift { k =>
-            readSelector.register(socket, SelectionKey.OP_READ, {
+            app.readSelector.register(socket, SelectionKey.OP_READ, {
                 val n = socket.read(b)
                 k(n)
             })
@@ -78,7 +77,7 @@ class NioConnection(sched:CoScheduler, readSelector:NioSelector,
         if (!socket.isOpen)
             -1  //indicate EOF
         else shift { k =>
-            writeSelector.register(socket, SelectionKey.OP_WRITE, {
+            app.writeSelector.register(socket, SelectionKey.OP_WRITE, {
                 val n = socket.write(b)
                 k(n)
             })
@@ -93,7 +92,7 @@ class NioConnection(sched:CoScheduler, readSelector:NioSelector,
             shiftUnit[Unit,Unit,Unit]()
     }
 
-    private def writeWait:Unit @suspendable = {
+    private def writeWait():Unit @suspendable = {
         val str = outQ.blockingDequeue
         if (str eq closeMarker) {
             socket.close

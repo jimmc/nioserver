@@ -10,4 +10,4 @@ doCmd() {
     "$@"
 }
 
-doCmd scala -cp $JARS EchoServer
+doCmd scala -cp $JARS ThreeQuestionsServer

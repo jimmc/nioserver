@@ -41,7 +41,7 @@
 
         <property name="relbin.files"
             value="README.md VERSION LICENSE COPYRIGHT HISTORY"/>
-        <property name="script.files" value="nioserver"/>
+        <property name="script.files" value="nioserver,3Qserver"/>
         <property name="relsrc.files"
                   value="build.xml ${src.dir}/**/*.scala
                         ${example.src.dir}/**/*.scala" />
