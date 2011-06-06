@@ -2,7 +2,6 @@ package net.jimmc.nio
 
 import java.nio.{ByteBuffer,CharBuffer}
 import java.nio.charset.{Charset,CharsetDecoder,CharsetEncoder,CoderResult}
-import scala.annotation.tailrec
 import scala.util.continuations._
 
 class LineDecoder {
@@ -17,7 +16,6 @@ class LineDecoder {
             lineHandler:(String)=>Unit @suspendable):Unit @suspendable =
         processChars(utf8Decoder.decode(b),lineHandler)
 
-    @tailrec
     private def processChars(cb:CharBuffer,
             lineHandler:(String)=>Unit @suspendable):Unit @suspendable = {
         val len = lengthOfFirstLine(cb)

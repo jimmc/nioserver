@@ -7,32 +7,32 @@ Java NIO and delimited continuations.
 
 This project holds the code used in my "Java NIO" series of blog posts.
 <table border=1>
-<tr><th>Tag</th><th>Blog Post</th></tr>
+<tr><th>Tag</th><th>Blog Post</th><th>Post Date</th></tr>
 
 <tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-continuations">
 blog-continuations</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/03/java-nio-and-scala-continuations.html">
-Java NIO and Scala Continuations</a></td></tr>
+Java NIO and Scala Continuations</a></td><td>March 22, 2011</td></tr>
 
 <tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-decoding">
 blog-decoding</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/03/java-nio-for-character-decoding-in.html">
-Java NIO for Character Decoding in Scala</a></td></tr>
+Java NIO for Character Decoding in Scala</a></td><td>March 28, 2011</td></tr>
 
 <tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-coroutines">
 blog-coroutines</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/04/java-nio-and-scala-coroutines.html">
-Java NIO and Scala Coroutines</a></td></tr>
+Java NIO and Scala Coroutines</a></td><td>April 2, 2011</td></tr>
 
 <tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-write">
 blog-write</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/04/java-nio-for-writing.html">
-Java NIO for Writing</a></td></tr>
+Java NIO for Writing</a></td><td>April 8, 2011</td></tr>
 
 <tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-complete">
 blog-complete</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/04/java-nio-complete-scala-server.html">
-Java NIO Complete Scala Server</a></td></tr>
+Java NIO Complete Scala Server</a></td><td>April 15, 2011</td></tr>
 
 </table>
 
