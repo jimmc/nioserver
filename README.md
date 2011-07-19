@@ -34,6 +34,11 @@ blog-complete</a></td>
 <td><a href="http://jim-mcbeath.blogspot.com/2011/04/java-nio-complete-scala-server.html">
 Java NIO Complete Scala Server</a></td><td>April 15, 2011</td></tr>
 
+<tr><td><a href="https://github.com/jimmc/nioserver/tree/blog-executor">
+blog-executor</a></td>
+<td><a href="http://jim-mcbeath.blogspot.com/2011/07/multithread-coroutine-scheduler.html">
+Multithread Coroutine Scheduler</a></td><td>July 19, 2011</td></tr>
+
 </table>
 
 ## Compiling and Running with Ant

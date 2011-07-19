@@ -24,7 +24,7 @@ class CoQueue[A](val scheduler:CoScheduler, val waitSize:Int)
     /** Blocks when the queue is full. */
     val enqueueBlocker = new Blocker() {
         val scheduler = coqueue.scheduler
-        def isBlocked() = length >= waitSize
+        def isBlocked() = synchronized { length >= waitSize }
     }
 
     /** Blocks when the queue is empty. */
@@ -41,7 +41,7 @@ class CoQueue[A](val scheduler:CoScheduler, val waitSize:Int)
     def blockingEnqueue(x:A):Unit @suspendable = {
         enqueueBlocker.waitUntilNotBlocked
         enqueue(x)
-        scheduler.coNotify
+        scheduler.unblocked(dequeueBlocker)
     }
 
     /** Suspend the calling coroutine until there is a value ready to
@@ -52,7 +52,7 @@ class CoQueue[A](val scheduler:CoScheduler, val waitSize:Int)
     def blockingDequeue():A @suspendable = {
         dequeueBlocker.waitUntilNotBlocked
         val x = dequeue
-        scheduler.coNotify
+        scheduler.unblocked(enqueueBlocker)
         x
     }
 }

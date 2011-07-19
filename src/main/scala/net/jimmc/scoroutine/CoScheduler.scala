@@ -34,6 +34,10 @@ trait CoScheduler extends Runnable { cosched =>
 
     private[scoroutine] def setRoutineContinuation(
             b:Blocker, cont:Option[Unit=>Unit]):Unit
+
+    /** Note that a possibly-blocked continuation is now probably runnable. */
+    def unblocked(b:Blocker):Unit
+
     /** Find the next runnable coroutine and run it until it yields
      * (by calling waitUntilNotBlocked).
      * @return The status telling what happened.

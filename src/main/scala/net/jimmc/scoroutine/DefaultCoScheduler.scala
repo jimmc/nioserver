@@ -32,6 +32,9 @@ class DefaultCoScheduler extends CoScheduler {
         }
     }
 
+    //We only maintain a single list for both blocked and unblocked tasks.
+    def unblocked(b:Blocker) = coNotify
+
     def runNextUnblockedRoutine():RunStatus = {
         var blockedCount = 0
         for (i <- 0 until blockerList.size) {
